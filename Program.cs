@@ -36,6 +36,9 @@ namespace ChatAI
                             var envKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                             if (!string.IsNullOrWhiteSpace(envKey)) opts.ApiKey = envKey;
                         });
+                        services.AddSingleton<ISentimentService, SentimentService>();
+                        services.AddSingleton<IConversationManager, ConversationManager>();
+                        
                         services.AddHttpClient<IOpenAIService, OpenAIService>();
                     })
                     .UseSerilog()
