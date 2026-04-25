@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ChatAI.Models;
 using ChatAI.Services;
@@ -14,6 +15,7 @@ namespace ChatAI
     {
         public static async Task Main(string[] args)
         {
+           
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console()
@@ -30,29 +32,53 @@ namespace ChatAI
                     })
                     .ConfigureServices((ctx, services) =>
                     {
+                        
                         services.Configure<OpenAIOptions>(ctx.Configuration.GetSection("OpenAI"));
                         services.PostConfigure<OpenAIOptions>(opts =>
                         {
                             var envKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                             if (!string.IsNullOrWhiteSpace(envKey)) opts.ApiKey = envKey;
                         });
+
+                      
                         services.AddSingleton<ISentimentService, SentimentService>();
                         services.AddSingleton<IConversationManager, ConversationManager>();
+                        
                         
                         services.AddHttpClient<IOpenAIService, OpenAIService>();
                     })
                     .UseSerilog()
                     .Build();
 
-                var chat = host.Services.GetRequiredService<IOpenAIService>();
-                var history = new List<Message>
-{
-    new Message("system", "You are a helpful assistant."),
-    new Message("user", "I’m stressed with school, give me advice")
-};
-                Console.WriteLine("Calling OpenAI...");
-                var reply = await chat.SendMessageAsync(history);
-                Console.WriteLine($"Assistant: {reply}");
+         
+                var chatService = host.Services.GetRequiredService<IOpenAIService>();
+                var manager = host.Services.GetRequiredService<IConversationManager>();
+
+                
+                manager.LoadFromFile();
+// holder for Member 3
+                string userPrompt = "I’m stressed with school, give me advice";
+                
+                
+                manager.AddMessage("user", userPrompt);
+
+                Console.WriteLine("Calling OpenAI with history and sentiment tracking...");
+
+               
+                var reply = await chatService.SendMessageAsync(manager.GetHistory());
+
+                
+                manager.AddMessage("assistant", reply);
+
+               
+                manager.SaveToFile();
+
+                
+                Console.WriteLine($"\nAssistant: {reply}");
+                
+                
+                var lastUserMsg = manager.GetHistory().LastOrDefault(m => m.Role == "user");
+                Console.WriteLine($"\n[MEMBER 2 DEBUG] Detected Sentiment: {lastUserMsg?.Sentiment}");
             }
             catch (Exception ex)
             {

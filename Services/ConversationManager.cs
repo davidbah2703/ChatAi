@@ -21,7 +21,12 @@ namespace ChatAI.Services
         {
             _sentimentService = sentimentService;
         }
-
+        public List<Message> SearchMessages(string keyword)
+        {
+            return _activeConversation.Messages
+                .Where(m => m.Content.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
         public void AddMessage(string role, string content)
         {
             var message = new Message(role, content);
