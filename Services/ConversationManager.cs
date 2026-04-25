@@ -27,6 +27,14 @@ namespace ChatAI.Services
                 .Where(m => m.Content.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+        public void PrintStats()
+        {
+            int pos = _activeConversation.Messages.Count(m => m.Sentiment == "Positive");
+            int neg = _activeConversation.Messages.Count(m => m.Sentiment == "Negative");
+            Console.WriteLine($"-- Conversation Stats --");
+            Console.WriteLine($"Total Messages: {_activeConversation.Messages.Count}");
+            Console.WriteLine($"Positive: {pos}, Negative: {neg}, Neutral: {_activeConversation.Messages.Count - pos - neg}");
+        }
         public void AddMessage(string role, string content)
         {
             var message = new Message(role, content);
