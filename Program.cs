@@ -57,29 +57,12 @@ namespace ChatAI
                 
                 manager.LoadFromFile();
 // holder for Member 3
-                string userPrompt = "I’m stressed with school, give me advice";
+              var chatService = host.Services.GetRequiredService<IOpenAIService>();
+                var manager = host.Services.GetRequiredService<IConversationManager>();
                 
-                
-                manager.AddMessage("user", userPrompt);
-
-                Console.WriteLine("Calling OpenAI with history and sentiment tracking...");
-
-               
-                var reply = await chatService.SendMessageAsync(manager.GetHistory());
-
-                
-                manager.AddMessage("assistant", reply);
-
-               
-                manager.SaveToFile();
-
-                
-                Console.WriteLine($"\nAssistant: {reply}");
-                
-                
-                var lastUserMsg = manager.GetHistory().LastOrDefault(m => m.Role == "user");
-                Console.WriteLine($"\n[MEMBER 2 DEBUG] Detected Sentiment: {lastUserMsg?.Sentiment}");
-            }
+                var ui = new ChatAI.UI.ConsoleUI(chatService, manager);
+                await ui.Run();
+            }   
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Application terminated unexpectedly");
