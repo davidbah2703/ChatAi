@@ -55,10 +55,6 @@ namespace ChatAI
                 var manager = host.Services.GetRequiredService<IConversationManager>();
 
                 
-                manager.LoadFromFile();
-// holder for Member 3
-              var chatService = host.Services.GetRequiredService<IOpenAIService>();
-                var manager = host.Services.GetRequiredService<IConversationManager>();
                 
                 var ui = new ChatAI.UI.ConsoleUI(chatService, manager);
                 await ui.Run();
