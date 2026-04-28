@@ -1,15 +1,19 @@
+using ChatAI.Services;
+
 namespace ChatAI.UI
 {
     public class ConsoleUI
     {
-        private readonly dynamic _chatService;
+        private readonly IOpenAIService _chatService;
+        private readonly IConversationManager _manager;
 
-        public ConsoleUI(dynamic chatService)
+        public ConsoleUI(IOpenAIService chatService, IConversationManager manager)
         {
             _chatService = chatService;
+            _manager = manager;
         }
 
-        public void Run()
+        public async Task Run()
         {
             Console.WriteLine("Chat AI started. Type /help for commands.");
 
@@ -24,8 +28,17 @@ namespace ChatAI.UI
                 if (HandleCommand(input))
                     continue;
 
-                var response = _chatService.SendMessage(input);
-                Console.WriteLine($"AI: {response}");
+                _manager.AddMessage("user", input);
+                try
+                {
+                    var response = await _chatService.SendMessageAsync(_manager.GetHistory());
+                    _manager.AddMessage("assistant", response);
+                    Console.WriteLine($"AI: {response}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                }
             }
         }
 
@@ -42,17 +55,17 @@ namespace ChatAI.UI
                     return true;
 
                 case "/clear":
-                    _chatService.Clear();
+                    _manager.Clear();
                     Console.WriteLine("Conversation cleared.");
                     return true;
 
                 case "/save":
-                    _chatService.Save("chat.json");
+                    _manager.SaveToFile("chat.json");
                     Console.WriteLine("Saved.");
                     return true;
 
                 case "/load":
-                    _chatService.Load("chat.json");
+                    _manager.LoadFromFile("chat.json");
                     Console.WriteLine("Loaded.");
                     return true;
 

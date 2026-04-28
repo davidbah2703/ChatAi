@@ -24,4 +24,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Tests/**" />
+    <Compile Remove="ChatAI.Tests/**" />
+  </ItemGroup>
+
 </Project>
